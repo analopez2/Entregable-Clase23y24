@@ -43,7 +43,7 @@ router.get('/logout', async (req, res) => {
   const nombre = req.session?.user?.first_name;
   req.session.destroy((err) => {
     if (err) return res.status(500).send('error');
-    res.send({ nombre: nombre });
+    res.send({ mensaje: `Hasta luego ${nombre}` });
   });
 });
 
