@@ -1,3 +1,11 @@
+const btn = document.getElementById('logoutbtn');
+
+btn.addEventListener('click', (evt) => {
+  fetch('/api/sessions/logout')
+    .then((result) => result.json())
+    .then((json) => console.log(json));
+});
+
 const socket = io.connect();
 
 function enviarMensaje() {
@@ -22,7 +30,7 @@ socket.on('mensajes', (mensajes) => {
         <b style="color:blue;">${mensaje.email}</b>
         [<span style="color:brown;">${mensaje.timestamp}</span>] :
         <i style="color:green;">${mensaje.text}</i>
-        </div>`
+        </div>`,
     )
     .join('<br>');
 
@@ -30,7 +38,7 @@ socket.on('mensajes', (mensajes) => {
 });
 
 const createProductTable = async (products) => {
-  const template = await (await fetch('views/products.hbs')).text();
+  const template = await (await fetch('views/products.handlebars')).text();
   const templateCompiled = Handlebars.compile(template);
   return templateCompiled({ products });
 };

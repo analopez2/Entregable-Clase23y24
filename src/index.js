@@ -13,6 +13,10 @@ import path from 'path';
 import { JOI_VALIDATOR } from './utils/joi-validator.js';
 import { MongoDb } from './db/mongoDb/mongodb.js';
 import { normalize, schema, denormalize } from 'normalizr';
+import sessionsRouter from './routers/session.router.js';
+import viewsRouter from './routers/views.router.js';
+import MongoStore from 'connect-mongo';
+import session from 'express-session';
 
 MongoDb.init();
 
@@ -33,11 +37,10 @@ const PORT = 8080;
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/api/productos', productRouter);
 
-app.engine('hbs', handlebars.engine());
+app.engine('handlebars', handlebars.engine());
 app.set('views', path.join(__dirname, '../public/views'));
-app.set('view engine', 'hbs');
+app.set('view engine', 'handlebars');
 
 const productsFaker = new ProductsFaker();
 const schemaAuthor = new schema.Entity('authors', {});
@@ -47,6 +50,20 @@ const schemaMensajes = new schema.Entity('mensajes', {
 const schemaListMensajes = new schema.Entity('listMensajes', {
   mensajes: [schemaMensajes],
 });
+
+app.use(
+  session({
+    store: MongoStore.create({
+      mongoUrl:
+        'mongodb+srv://test:test1234@cluster0.iqc88.mongodb.net/entregable23_24?retryWrites=true&w=majority',
+      mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
+      ttl: 100,
+    }),
+    secret: 'PapaConQuesito',
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
 
 app.post('/api/mensajes', async (req, res) => {
   try {
@@ -175,6 +192,10 @@ io.on('connection', async (socket) => {
     io.sockets.emit('products', await ProductsApi.getAll());
   });
 });
+
+app.use('/', viewsRouter);
+app.use('/api/productos', productRouter);
+app.use('/api/sessions', sessionsRouter);
 
 KnexService.init();
 const server = httpServer.listen(PORT, () => {
